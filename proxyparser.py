@@ -1,26 +1,33 @@
+from bitstring import BitArray
+
 # These headers are in Big Endian!
 packetTypes = {"heartbeat": 0x0000,
                "pos": 0x6d76,
                "jump": 0x6a70,
-               "fireball": 0x2a69}
+               "spell": 0x2a69,
+               "wpn_switch": 0x733d,
+               "logic_toggle": 0x3031
+               }
 
 headerTypes = {v: k for k, v in packetTypes.items()}
 
 # Formatting for printing the packets
 
-formatter = {"pos": (4, 8, 8, 8, 8, 4, 4),
-             # header #posxy #posxy #faceAnglexy #faceAnglexz # #movedirection
+formatter = {"pos": (4, 8, 8, 8, 4, 4, 4, 4),
+             # header #posx #posy #posz #faceAnglexz #faceAnglexy #Top/bottom angle? #movedirection
 
              "jump": (4, 2, 10, 10, 8, 8, 4, 4),
              # header up/down(?) posxy posxy facexy facexy facez(?) jumpdirection
 
-             "fireball": (4, 8, 8, 8, 8, 4, 10, 10, 8, 8),  # ...4:
+             "spell": (4, 8, 8, 8, 8, 4, 10, 10, 8, 8),  # ...4:
+
+             "logic_toggle": (4, 24, 8, 8, 8, 8, 8, 8, 4)
              }
 
 # Don't print these packets
-ignorePrint = ("heartbeat",)
+ignorePrint = ("heartbeat", "jump", "pos", "wpn_switch", "spell")
 printFilter = list(packetTypes[x] for x in ignorePrint)
-printOnly = ("pos",)
+printOnly = ()
 
 # Create additional packets for the server
 injector_queue = []
@@ -55,14 +62,14 @@ def format_packet(data, printRanges):
     packet_string = data.hex()
     msg = ""
 
-    while len(packet_string) > 0:
-        for rangeVal in printRanges:
-            bigEndString = packet_string[:rangeVal]
-            msg += big_to_little(bigEndString) + " "
+    for rangeVal in printRanges:
+        bigEndString = packet_string[:rangeVal]
+        msg += big_to_little(bigEndString) + " "
+        packet_string = packet_string[rangeVal:]
 
-            packet_string = packet_string[rangeVal:]
+    if len(packet_string) > 0:
         msg += "..." + packet_string
-        break
+
     return msg
 
 
@@ -78,6 +85,16 @@ def print_packet(prefix, data):
     if printOnly and headerType not in printOnly:
         return
 
+    # TODO replace
+    if headerType == "logic_toggle":
+
+        # First byte only contains data of two switches
+        bit_arr = BitArray(hex=data[13:18][::-1].hex())
+        print(bit_arr.bin[2:])
+
+        # TODO Read server response after toggle
+        return
+
     if headerType in formatter:
         print(prefix + format_packet(data, formatter[headerType]))
     else:
@@ -91,8 +108,6 @@ def parse(data, port, origin):
     # Ignore server-side packets for now
     if port != 3333 and origin != "server":
         print_packet("[g2s:{}]: ".format(port), data)
-        data = mod_packet(data)
-        print_packet("[g2s:2000]: ", data)
 
     return data
 

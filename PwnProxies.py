@@ -61,10 +61,7 @@ class Game2Proxy(Thread):
             if data:
                 self.connected = True
                 try:
-                    parser.print_packet("[g2s:{}]: ".format(port), data)
-                    data = parser.mod_packet(data)
-                    parser.print_packet("[g2s:2000]: ", data)
-                    # data = parser.parse(data, self.port, 'client')
+                    data = parser.parse(data, self.port, 'client')
 
                 except Exception as e:
                     print("client[{}] error: ".format(self.port), e)

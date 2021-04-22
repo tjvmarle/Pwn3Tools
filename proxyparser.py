@@ -9,19 +9,19 @@ packetTypes = {"heartbeat": 0x0000,
                "logic_toggle": 0x3031
                }
 
+serverPackets = {"mana": 0x6d61}
+
 headerTypes = {v: k for k, v in packetTypes.items()}
 
 # Formatting for printing the packets
 
-formatter = {"pos": (4, 8, 8, 8, 4, 4, 4, 4),
-             # header #posx #posy #posz #faceAnglexz #faceAnglexy #Top/bottom angle? #movedirection
-
+formatter = {"pos": (4, 8, 8, 8, 4, 4, 4, 4),  # See PositionPacket for data partition
              "jump": (4, 2, 10, 10, 8, 8, 4, 4),
              # header up/down(?) posxy posxy facexy facexy facez(?) jumpdirection
 
              "spell": (4, 8, 8, 8, 8, 4, 10, 10, 8, 8),  # ...4:
 
-             "logic_toggle": (4, 24, 8, 8, 8, 8, 8, 8, 4)
+             "logic_toggle": (4, 28, 8, 8, 8, 4, 4, 4, 4)
              }
 
 # Don't print these packets
@@ -51,16 +51,15 @@ def mod_packet(data):
 
 def big_to_little(bigEndian):
     littleEndian = ""
+
     while len(bigEndian) > 0:
         littleEndian += bigEndian[-2:]
         bigEndian = bigEndian[:-2]
-
     return littleEndian
 
 
 def format_packet(data, printRanges):
     packet_string = data.hex()
-    msg = ""
 
     for rangeVal in printRanges:
         bigEndString = packet_string[:rangeVal]
@@ -85,15 +84,16 @@ def print_packet(prefix, data):
     if printOnly and headerType not in printOnly:
         return
 
-    # TODO replace
+    # TODO delete, this is temporary
     if headerType == "logic_toggle":
+        pass
 
         # First byte only contains data of two switches
-        bit_arr = BitArray(hex=data[13:18][::-1].hex())
-        print(bit_arr.bin[2:])
+        # bit_arr = BitArray(hex=data[13:18][::-1].hex())
+        # print(bit_arr.bin[2:])
 
         # TODO Read server response after toggle
-        return
+        # return
 
     if headerType in formatter:
         print(prefix + format_packet(data, formatter[headerType]))
@@ -103,23 +103,25 @@ def print_packet(prefix, data):
     return
 
 
+ignoreStream = ("server",)
+
+
 def parse(data, port, origin):
 
-    # Ignore server-side packets for now
-    if port != 3333 and origin != "server":
-        print_packet("[g2s:{}]: ".format(port), data)
+    # Ignore masterserver for now
+    if port != 3333 and origin not in ignoreStream:
+        src = "g2s" if origin == "client" else "s2g"
+        print_packet("[{}:{}]: ".format(src, port), data)
 
     return data
 
 
 def inject(proxies):
-    print("pls inject")
     for proxy in proxies:
         print("Inject on port:", proxy.port)
         if proxy.g2p.connected:
             pass
-            # for packet in injector_queue:
-            #     proxy.g2p.server.sendall(packet)
+            # TODO: Write an actual injector
 
 
 def execute(cmd):

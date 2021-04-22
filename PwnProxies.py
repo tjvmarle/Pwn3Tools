@@ -19,7 +19,8 @@ class Proxy2Server(Thread):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((host, port))
 
-    # run in thread
+    # run in threadm
+
     def run(self):
         while True:
             data = self.server.recv(4096)
@@ -27,11 +28,6 @@ class Proxy2Server(Thread):
             if data:
                 try:
                     data = parser.parse(data, self.port, 'server')
-
-                    # Send additional packets. Used for auto-looting
-                    # if len(parser.CLIENT_QUEUE) > 0:
-                    #     pkt = parser.CLIENT_QUEUE.pop()
-                    #     self.game.sendall(pkt)
 
                 except Exception as e:
                     print('server[{}] error: '.format(self.port), e)

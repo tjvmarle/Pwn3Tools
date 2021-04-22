@@ -1,7 +1,7 @@
 from PacketTypes import Packet
 
 
-class PositionPacket(Packet):
+class Position(Packet):
 
     def __init__(self, data):
         super().__init__(data)
@@ -28,7 +28,7 @@ class PositionPacket(Packet):
         second_byte = {0x00: "  ", 0x81: " F", 0x71: " B"}
 
         pos_string += first_byte[self.movedirection[0]]
-        pos_string += second_byte[self.movedirection[0]]
+        pos_string += second_byte[self.movedirection[1]]
 
         print(pos_string)
 

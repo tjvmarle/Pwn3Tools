@@ -1,26 +1,4 @@
-class Packet():
-
-    def __init__(self, data):
-        self.data = data      # Recieved packet
-        self.new_data = None  # Placeholder for modified packets
-        self.parse()
-
-    # Reverse Endianness except for the header (first two bytes)
-    def reverse_endian(self, byte_string):
-        # TODO: Implement in base
-        pass
-
-    # Print the packet to console in a formatted way
-    def print(self):
-        raise NotImplementedError()
-
-    # Create a new packet based on the input
-    def mod(self):
-        raise NotImplementedError()
-
-    # Convert packet to more meaningful data
-    def parse(self):
-        raise NotImplementedError()
+from PacketTypes import Packet
 
 
 class PositionPacket(Packet):
@@ -53,3 +31,7 @@ class PositionPacket(Packet):
         pos_string += second_byte[self.movedirection[0]]
 
         print(pos_string)
+
+    # TODO: You should probably be able to specify multiple modification algorithms and trigger one based one cmd input
+    def mod(self):
+        pass

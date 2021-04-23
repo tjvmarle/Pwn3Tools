@@ -29,10 +29,10 @@ class Packet():
     def __angles_to_string(self, angles):
         return " ".join(str(ang).rjust(6) for ang in angles) + " "
 
-    # Same, but with movedirecton
+    # Same, but with movedirecton -
     def __movedir_to_string(self, md):
-        return {0x00: " ", 0x81: "L", 0x7f: "R"}[md[0]] + \
-            {0x00: "  ", 0x81: "F ", 0x7f: "B "}[md[1]]
+        return {0x00: "  ", 0x81: "◄ ", 0x7f: "► "}[md[0]] + \
+            {0x00: "  ", 0x81: "▲ ", 0x7f: "▼ "}[md[1]]
 
     # Convert packet to members
     def parse(self):

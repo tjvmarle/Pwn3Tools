@@ -33,5 +33,5 @@ class Position(Packet):
         print(pos_string)
 
     # TODO: You should probably be able to specify multiple modification algorithms and trigger one based one cmd input
-    def mod(self):
+    def __mod_packet(self):
         pass

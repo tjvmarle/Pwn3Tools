@@ -25,18 +25,15 @@ class TogglePuzzle(Packet):
         self.movedirection = self.data[34:36]
 
     def print(self):
-        packet_str = "tgl "
+        pkt_str = "tgl "
 
-        for pos in (self.x_pos, self.y_pos, self.x_pos):
-            packet_str += self.pos_to_string(pos)
+        pkt_str += self.__pos_to_string((self.x_pos, self.y_pos, self.x_pos))
+        pkt_str += self.__angles_to_string((self.theta_angle, self.phi_angle))
+        pkt_str += hex(self.top_angle).rjust(6)
+        pkt_str += self.movedir_to_string(self.movedirection)
 
-        packet_str += self.angle_to_string(self.theta_angle)
-        packet_str += self.angle_to_string(self.phi_angle)
-        packet_str += hex(self.top_angle).rjust(6)
-        packet_str += self.movedir_to_string(self.movedirection)
-
-        print(packet_str)
+        print(pkt_str)
 
     # TODO: You should probably be able to specify multiple modification algorithms and trigger one based one cmd input
-    def mod(self):
+    def __mod_packet(self):
         pass

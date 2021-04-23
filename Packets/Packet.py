@@ -19,26 +19,20 @@ class Packet():
 
         return rev_string
 
-    # Many packets seem to contain position data, use generic print formatting
+    # Many packets seem to contain position data formatted the same way, so use a generic print formatting
     # TODO: Finetune preferred formatting. Maybe drop a a couple of high/low bits
-    def pos_to_string(self, pos):
-        return str(pos.rjust(10)) + " "
+    def __pos_to_string(self, xyz):
+        return " ".join(str(pos).rjust(10) for pos in xyz) + " "
 
     # Same, but with angles
-    # TODO: Remember to fix
-    def angle_to_string(self, angle):
-        return str(angle).rjust(6) + " "
+    # TODO: Change to degrees
+    def __angles_to_string(self, angles):
+        return " ".join(str(ang).rjust(6) for ang in angles) + " "
 
     # Same, but with movedirecton
-    def movedir_to_string(self, dir):
-        dir_str = ""
-        if dir[0]:
-            dir_str += " L" if dir[0] == 0x81 else " R"
-
-        if dir[1]:
-            dir_str += " F" if dir[0] == 0x81 else " B"
-
-        return dir_str + " "
+    def __movedir_to_string(self, md):
+        return {0x00: " ", 0x81: "L", 0x7f: "R"}[md[0]] + \
+            {0x00: "  ", 0x81: "F ", 0x7f: "B "}[md[1]]
 
     # Convert packet to members
     def parse(self):
@@ -48,12 +42,19 @@ class Packet():
     def print(self):
         raise NotImplementedError()
 
+    # Private, implement in subclass
+    def __mod_packet(self):
+        raise NotImplementedError()
+
     # Create a new packet based on the input
-    # TODO: find a way to fix the self.modified in this base class, but leave further implementation to derived classes
     def mod(self):
         self.modified = True
+        self.__mod_packet()
+
+    def inject(self):
+        # Implementations should maybe follow some kind of script/scenario
         raise NotImplementedError()
 
     # TODO: Evaluate further functionalities:
     # * Injection of additional packets.
-    # * Method to convert the internal state of the object back into a packet --> Useful for mod(...)
+    # * Method to convert the internal state of the object back into a packet --> Useful for print() + mod()

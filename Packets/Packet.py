@@ -1,13 +1,11 @@
-# Base class to parse the game packets.
-# TODO: there should probably be some kind of packet_manager that takes care of instantiating the right subclass
-
-
 class Packet():
+    # Base class to parse the game packets.
     # TODO: check how 'correct' python commenting looks like
 
     def __init__(self, data):
         self.data = data      # Recieved packet
         self.new_data = None  # Placeholder for modified packets
+        self.modified = False
         self.parse()
 
     # Reverse Endianness of the string
@@ -51,7 +49,9 @@ class Packet():
         raise NotImplementedError()
 
     # Create a new packet based on the input
+    # TODO: find a way to fix the self.modified in this base class, but leave further implementation to derived classes
     def mod(self):
+        self.modified = True
         raise NotImplementedError()
 
     # TODO: Evaluate further functionalities:

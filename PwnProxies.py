@@ -5,6 +5,7 @@ import proxyparser as parser
 # import random
 # import struct
 from importlib import reload
+import PacketManager
 
 # this code is getting worse and worse... please don't think this is good code
 
@@ -18,8 +19,7 @@ class Proxy2Server(Thread):
         self.host = host
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((host, port))
-
-    # run in threadm
+        self.pm = PacketManager("server", port)
 
     def run(self):
         while True:

@@ -5,7 +5,7 @@ class TogglePuzzle(BasePacket):
     """TCP packet describing state of the switch-puzzle. Identified by header 0x3130"""
 
     def __init__(self, data):
-        super().__init__(data)
+        super(TogglePuzzle, self).__init__(data)
 
     def parse(self):
         # Part togglestates, part unknown

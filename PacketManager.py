@@ -21,6 +21,7 @@ class PacketManager():
         self.packet = None
         self.reciever = None
 
+    # TODO: This needs some kind of filter and be toggleable from the CLI
     def __print_unknown(self, data):
         """
         Print a packet not defined in either dict
@@ -40,7 +41,6 @@ class PacketManager():
             data:   TCP packet in the form of a raw bytes list
             source: source of the packet. Either 'client' or 'server'
         """
-
         packetSource = gamePackets if source == "client" else serverPackets
 
         header = int.from_bytes(data[:2], "big")
@@ -50,6 +50,11 @@ class PacketManager():
         else:
             self.__print_unknown(data)
 
+        out_packet = None
+        if self.packet is not None and self.packet.modified:
+            out_packet = self.packet.new_packet
+        else:
+            out_packet = data
+
         if self.reciever is not None:
-            packet = data if not self.packet.modified else self.packet.new_packet
-            self.reciever.sendall(packet)
+            self.reciever.sendall(out_packet)

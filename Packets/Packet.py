@@ -47,8 +47,7 @@ class BasePacket():
             md:     raw_bytes, containing left/right and forward/backward direction consecutively
             return: string with space-seperated movedirections
         """
-        return {0x00: "  ", 0x81: "◄ ", 0x7f: "► "}[md[0]] + \
-            {0x00: "  ", 0x81: "▲ ", 0x7f: "▼ "}[md[1]]
+        return {0x00: "  ", 0x81: "▼ ", 0x7f: "▲ "}[md[0]] + {0x00: "  ", 0x81: "◄ ", 0x7f: "► "}[md[1]]
 
     def parse(self):
         """Parse self.data into more meaningful members"""

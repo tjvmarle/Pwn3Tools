@@ -5,7 +5,7 @@ import proxyparser as parser
 # import random
 # import struct
 from importlib import reload
-from PacketManager import PacketManager
+import PacketManager as PM
 
 
 # Basic proxy setup shamelessly stolen from LiveOverflow
@@ -18,7 +18,7 @@ class Proxy2Server(Thread):
         self.host = host
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((host, port))
-        self.pm = PacketManager()
+        self.pm = PM.PacketManager()
 
     def run(self):
         while True:
@@ -26,13 +26,11 @@ class Proxy2Server(Thread):
 
             if data:
                 try:
-                    data = parser.parse(data, self.port, 'server')
+                    self.pm.parse_packet(data, "server")
+                    # data = parser.parse(data, self.port, 'server')
 
                 except Exception as e:
                     print('server[{}] error: '.format(self.port), e)
-
-                # Forward to client
-                self.game.sendall(data)
 
 
 class Game2Proxy(Thread):
@@ -50,7 +48,7 @@ class Game2Proxy(Thread):
         self.game, addr = sock.accept()
         self.connected = False
 
-        self.pm = PacketManager()
+        self.pm = PM.PacketManager()
 
     def run(self):
         while True:
@@ -58,13 +56,11 @@ class Game2Proxy(Thread):
             if data:
                 self.connected = True
                 try:
-                    data = parser.parse(data, self.port, 'client')
+                    self.pm.parse_packet(data, "client")
+                    # data = parser.parse(data, self.port, 'client')
 
                 except Exception as e:
                     print("client[{}] error: ".format(self.port), e)
-
-                # Forward to server
-                self.server.sendall(data)
 
 
 class Proxy(Thread):
@@ -83,13 +79,13 @@ class Proxy(Thread):
             self.p2s = Proxy2Server(self.to_host, self.port)
 
             # Cross-referencing both proxies to forward packets
-            self.g2p.server = self.p2s.server
-            self.p2s.game = self.g2p.game
+            # self.g2p.server = self.p2s.server
+            # self.p2s.game = self.g2p.game
             # self.running = True
 
             # Same references for the packetmanager
             self.g2p.pm.reciever = self.p2s.server
-            self.p2s.pm.reciever = self.g2p.server
+            self.p2s.pm.reciever = self.g2p.game
 
             self.g2p.start()
             self.p2s.start()
@@ -117,13 +113,14 @@ while True:
         if cmd[:4] == 'quit':
             os._exit(0)
 
-        elif cmd[:6] == 'inject':
-            parser.inject(game_servers)
+        # elif cmd[:6] == 'inject':
+        #     parser.inject(game_servers)
 
         else:
-            reload(parser)
-            parser.execute(cmd)
-            print("\n\n\nReloaded parser\n\n\n")
+            # reload(PM)
+            # TODO: After reloading, reinstantiate the PM's and reassign them. Don't forget to copy the pm.reciever's!
+            # parser.execute(cmd)
+            print("\n\n\nReloaded PacketManager\n\n\n")
 
     except Exception as e:
         print("Error in command-loop: ", e)

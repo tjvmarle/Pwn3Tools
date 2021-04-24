@@ -1,11 +1,11 @@
-from PacketTypes import Packet
+from Packet import Packet
 
 
 class Position(Packet):
+    """TCP packet describing player position. Identified by header 0x6d76"""
 
     def __init__(self, data):
         super().__init__(data)
-        self.x_pos, self.y_pos, self.z_pos = 0, 0, 0
 
     def parse(self):
         self.x_pos = int.from_bytes(self.data[2:6], 'big')

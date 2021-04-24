@@ -1,7 +1,8 @@
-from PacketTypes import Packet
+from Packet import Packet
 
 
 class TogglePuzzle(Packet):
+    """TCP packet describing state of the switch-puzzle. Identified by header 0x3031"""
 
     def __init__(self, data):
         super().__init__(data)
@@ -9,7 +10,7 @@ class TogglePuzzle(Packet):
     def parse(self):
         # Part togglestates, part unknown
         # TODO: Break down this range further
-        self.unknown = int.from_bytes(self.data[2:16], 'big')
+        self.unknown = self.data[2:16]
 
         self.x_pos = int.from_bytes(self.data[16:20], 'big')
         self.y_pos = int.from_bytes(self.data[20:24], 'big')
@@ -19,18 +20,19 @@ class TogglePuzzle(Packet):
         self.theta_angle = int.from_bytes(self.data[28:30], 'big')
         self.phi_angle = int.from_bytes(self.data[30:32], 'big')
 
-        # Still don't get this one, some kind of overflow for up/down angle
-        self.top_angle = int.from_bytes(self.data[32:34], 'big')
+        # Still don't get this one, only has a value in the extremes of up/down
+        self.extr_angle = int.from_bytes(self.data[32:34], 'big')
 
         self.movedirection = self.data[34:36]
 
     def print(self):
         pkt_str = "tgl "
 
+        pkt_str += self.unknown.hex()
         pkt_str += self.__pos_to_string((self.x_pos, self.y_pos, self.x_pos))
         pkt_str += self.__angles_to_string((self.theta_angle, self.phi_angle))
-        pkt_str += hex(self.top_angle).rjust(6)
-        pkt_str += self.movedir_to_string(self.movedirection)
+        pkt_str += hex(self.extr_angle).rjust(6)
+        pkt_str += self.__movedir_to_string(self.movedirection)
 
         print(pkt_str)
 

@@ -1,4 +1,4 @@
-from Packet import Packet
+from Packets.Packet import Packet
 
 
 class Position(Packet):
@@ -11,27 +11,23 @@ class Position(Packet):
         self.x_pos = int.from_bytes(self.data[2:6], 'big')
         self.y_pos = int.from_bytes(self.data[6:10], 'big')
         self.z_pos = int.from_bytes(self.data[10:14], 'big')
-        self.xz_angle = int.from_bytes(self.data[14:16], 'big')
-        self.xy_angle = int.from_bytes(self.data[16:18], 'big')
-        self.top_angle = int.from_bytes(self.data[18:20], 'big')
+        self.theta_angle = int.from_bytes(self.data[14:16], 'big')
+        self.phi_angle = int.from_bytes(self.data[16:18], 'big')
+        self.extr_angle = int.from_bytes(self.data[18:20], 'big')
         self.movedirection = self.data[20:22]
 
     def print(self):
-        pos_string = "pos "
-        pos_string += str(self.x_pos).rjust(10)
-        pos_string += str(self.y_pos).rjust(10)
-        pos_string += str(self.z_pos).rjust(10)
-        pos_string += str(self.xz_angle).rjust(6)
-        pos_string += str(self.xy_angle).rjust(6)
-        pos_string += hex(self.top_angle).rjust(6)
-        first_byte = {0x00: "  ", 0x81: " L", 0x71: " R"}
-        second_byte = {0x00: "  ", 0x81: " F", 0x71: " B"}
+        pos_str = "pos "
+        pos_str += self._pos_to_string((self.x_pos, self.y_pos, self.x_pos))
+        pos_str += self._angles_to_string((self.theta_angle, self.phi_angle, self.extr_angle))
+        pos_str += self._movedir_to_string(self.movedirection)
 
-        pos_string += first_byte[self.movedirection[0]]
-        pos_string += second_byte[self.movedirection[1]]
-
-        print(pos_string)
+        print(pos_str)
 
     # TODO: You should probably be able to specify multiple modification algorithms and trigger one based one cmd input
-    def __mod_packet(self):
+    def _mod_packet(self):
         pass
+
+
+pck = Position([0x00, 0x016])
+pck.print()

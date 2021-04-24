@@ -1,9 +1,10 @@
-from Packets import Position
-from Packets import TogglePuzzle
+from Packets.Packet import Packet  # This feels stupid
+from Packets.Position import Position
+from Packets.TogglePuzzle import TogglePuzzle
 
 gamePackets = {
     0x6d76: Position,
-    0x3031: TogglePuzzle,
+    0x3130: TogglePuzzle,
     # 0x0000, : "heartbeat",
     # 0x6a70, : "jump",
     # 0x2a69, : "spell",
@@ -29,8 +30,10 @@ class PacketManager():
         """
 
         packet_string = ""
+        alternator = False
         for byte in data:
-            packet_string += byte.hex() + " "
+            packet_string += format(byte, "x").rjust(2, "0") + (" " if alternator else "")
+            alternator = not alternator
         print("unk ", packet_string)
 
     def parse_packet(self, data, source):
@@ -45,6 +48,7 @@ class PacketManager():
         header = int.from_bytes(data[:2], "big")
         if header in packetSource:
             self.packet = packetSource[header](data)
+            self.packet.print()
         else:
             self.__print_unknown(data)
 

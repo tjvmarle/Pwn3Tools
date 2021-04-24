@@ -17,7 +17,7 @@ class Position(Packet):
         self.movedirection = self.data[20:22]
 
     def print(self):
-        pos_str = "pos "
+        pos_str = "pos " + self.header_str
         pos_str += self._pos_to_string((self.x_pos, self.y_pos, self.x_pos))
         pos_str += self._angles_to_string((self.theta_angle, self.phi_angle, self.extr_angle))
         pos_str += self._movedir_to_string(self.movedirection)
@@ -27,7 +27,3 @@ class Position(Packet):
     # TODO: You should probably be able to specify multiple modification algorithms and trigger one based one cmd input
     def _mod_packet(self):
         pass
-
-
-pck = Position([0x00, 0x016])
-pck.print()

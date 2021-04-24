@@ -5,11 +5,10 @@ import proxyparser as parser
 # import random
 # import struct
 from importlib import reload
-import PacketManager
-
-# this code is getting worse and worse... please don't think this is good code
+from PacketManager import PacketManager
 
 
+# Basic proxy setup shamelessly stolen from LiveOverflow
 class Proxy2Server(Thread):
 
     def __init__(self, host, port):
@@ -19,7 +18,7 @@ class Proxy2Server(Thread):
         self.host = host
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((host, port))
-        self.pm = PacketManager("server", port)
+        self.pm = PacketManager()
 
     def run(self):
         while True:
@@ -51,6 +50,8 @@ class Game2Proxy(Thread):
         self.game, addr = sock.accept()
         self.connected = False
 
+        self.pm = PacketManager()
+
     def run(self):
         while True:
             data = self.game.recv(4096)
@@ -78,7 +79,6 @@ class Proxy(Thread):
     def run(self):
         while True:
 
-            # waiting for a client
             self.g2p = Game2Proxy(self.from_host, self.port)
             self.p2s = Proxy2Server(self.to_host, self.port)
 
@@ -86,6 +86,10 @@ class Proxy(Thread):
             self.g2p.server = self.p2s.server
             self.p2s.game = self.g2p.game
             # self.running = True
+
+            # Same references for the packetmanager
+            self.g2p.pm.reciever = self.p2s.server
+            self.p2s.pm.reciever = self.g2p.server
 
             self.g2p.start()
             self.p2s.start()

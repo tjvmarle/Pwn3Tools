@@ -3,6 +3,7 @@ class Packet():
 
     def __init__(self, data):
         self.data = data      # Recieved packet
+        self.header_str = format(int.from_bytes(data[:2], "big"), "x").rjust(4, "0") + " "
         self.new_data = None  # Placeholder for modified packets
         self.modified = False
         self.parse()
@@ -46,9 +47,8 @@ class Packet():
             md:     raw_bytes, containing left/right and forward/backward direction consecutively
             return: string with space-seperated movedirections
         """
-        return "123"
-        # return {0x00: "  ", 0x81: "◄ ", 0x7f: "► "}[md[0]] + \
-        #     {0x00: "  ", 0x81: "▲ ", 0x7f: "▼ "}[md[1]]
+        return {0x00: "  ", 0x81: "◄ ", 0x7f: "► "}[md[0]] + \
+            {0x00: "  ", 0x81: "▲ ", 0x7f: "▼ "}[md[1]]
 
     def parse(self):
         """Parse self.data into more meaningful members"""

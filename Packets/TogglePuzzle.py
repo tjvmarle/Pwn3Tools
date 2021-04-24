@@ -2,7 +2,7 @@ from Packets.Packet import Packet
 
 
 class TogglePuzzle(Packet):
-    """TCP packet describing state of the switch-puzzle. Identified by header 0x3031"""
+    """TCP packet describing state of the switch-puzzle. Identified by header 0x3130"""
 
     def __init__(self, data):
         super().__init__(data)
@@ -15,6 +15,7 @@ class TogglePuzzle(Packet):
         self.x_pos = int.from_bytes(self.data[16:20], 'big')
         self.y_pos = int.from_bytes(self.data[20:24], 'big')
         self.z_pos = int.from_bytes(self.data[24:28], 'big')
+
         self.theta_angle = int.from_bytes(self.data[28:30], 'big')
         self.phi_angle = int.from_bytes(self.data[30:32], 'big')
 
@@ -24,7 +25,7 @@ class TogglePuzzle(Packet):
         self.movedirection = self.data[34:36]
 
     def print(self):
-        pkt_str = "tgl "
+        pkt_str = "tgl " + self.header_str
         pkt_str += self.unknown.hex() + " "
         pkt_str += self._pos_to_string((self.x_pos, self.y_pos, self.x_pos))
         pkt_str += self._angles_to_string((self.theta_angle, self.phi_angle, self.extr_angle))

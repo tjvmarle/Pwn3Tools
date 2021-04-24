@@ -1,7 +1,7 @@
-from Packets.Packet import Packet
+from Packets.Packet import BasePacket
 
 
-class Position(Packet):
+class Position(BasePacket):
     """TCP packet describing player position. Identified by header 0x6d76"""
 
     def __init__(self, data):

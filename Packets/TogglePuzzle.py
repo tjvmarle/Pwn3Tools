@@ -1,7 +1,7 @@
-from Packets.Packet import Packet
+from Packets.Packet import BasePacket
 
 
-class TogglePuzzle(Packet):
+class TogglePuzzle(BasePacket):
     """TCP packet describing state of the switch-puzzle. Identified by header 0x3130"""
 
     def __init__(self, data):

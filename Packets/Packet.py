@@ -1,4 +1,4 @@
-class Packet():
+class BasePacket():
     """ Abstract base class to parse the game packets. """
 
     def __init__(self, data):

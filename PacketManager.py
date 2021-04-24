@@ -1,10 +1,8 @@
-from Packets.Packet import Packet  # This feels stupid
-from Packets.Position import Position
-from Packets.TogglePuzzle import TogglePuzzle
+import Packets as TCP
 
 gamePackets = {
-    0x6d76: Position,
-    0x3130: TogglePuzzle,
+    0x6d76: TCP.Position,
+    0x3130: TCP.TogglePuzzle,
     # 0x0000, : "heartbeat",
     # 0x6a70, : "jump",
     # 0x2a69, : "spell",

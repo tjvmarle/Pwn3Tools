@@ -15,7 +15,7 @@ class Proxy2Server(Thread):
 
     def __init__(self, host, port):
         super(Proxy2Server, self).__init__()
-        self.game = None
+        self.game = None  # Reference to other proxy
         self.port = port
         self.host = host
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,10 +49,11 @@ class Game2Proxy(Thread):
         sock.listen(1)
 
         # waiting for a connection
-        self.game, addr = sock.accept()
+        self.game = sock.accept()[0]  # This is were all the threads will block if not used!
         self.connected = False
 
         self.pm = PM.PacketManager("client")
+        self.pm.set_generator(Generator)
 
     def run(self):
         while True:
@@ -73,25 +74,24 @@ class Proxy(Thread):
         self.from_host = from_host
         self.to_host = to_host
         self.port = port
-        # self.running = False
+        self.running = False
 
     def run(self):
-        while True:
+        # while True: #I don't think this one is actually necessary...
 
-            self.g2p = Game2Proxy(self.from_host, self.port)
-            self.p2s = Proxy2Server(self.to_host, self.port)
+        self.g2p = Game2Proxy(self.from_host, self.port)
+        self.p2s = Proxy2Server(self.to_host, self.port)
 
-            # Cross-referencing both proxies to forward packets
-            # self.g2p.server = self.p2s.server
-            # self.p2s.game = self.g2p.game
-            # self.running = True
+        # Cross-references for the packetmanager
+        self.g2p.pm.reciever = self.p2s.server
+        self.p2s.pm.reciever = self.g2p.game
 
-            # Same references for the packetmanager
-            self.g2p.pm.reciever = self.p2s.server
-            self.p2s.pm.reciever = self.g2p.game
+        self.g2p.start()
+        self.p2s.start()
+        self.running = True
 
-            self.g2p.start()
-            self.p2s.start()
+    def reset_pm(self):
+        pass
 
 
 # First boot al servers
@@ -108,6 +108,28 @@ for port in range(3000, 3006):
     game_servers.append(_game_server)
     print("Listening on: {}".format(SERVER_ADDRESS + ":" + str(port)))
 
+
+def reload_proxies():
+    # Reciever and generator needs to be preserved
+    for entry in game_servers:
+
+        if not entry.running:
+            continue
+
+        old_pm_cl = entry.g2p.pm
+        new_pm_cl = PM.PacketManager("client")
+        new_pm_cl.reciever = old_pm_cl.reciever
+        new_pm_cl.generator = old_pm_cl.generator
+        entry.g2p.pm = new_pm_cl
+
+        old_pm_sr = entry.p2s.pm
+        new_pm_sr = PM.PacketManager("server")
+        new_pm_sr.reciever = old_pm_sr.reciever
+        new_pm_sr.generator = old_pm_sr.generator
+        entry.p2s.pm = new_pm_sr
+        print("\nReloaded", entry.g2p.port, "\n\n\n")
+
+
 # Loop for user input
 while True:
     try:
@@ -116,14 +138,9 @@ while True:
         if cmd[:4] == 'quit':
             os._exit(0)
 
-        # elif cmd[:6] == 'inject':
-        #     parser.inject(game_servers)
-
         else:
-            # reload(PM)
-            # TODO: After reloading, reinstantiate the PM's and reassign them. Don't forget to copy the pm.reciever's!
-            # parser.execute(cmd)
-            print("\n\n\nReloaded PacketManager\n\n\n")
+            reload(PM)
+            reload_proxies()
 
     except Exception as e:
         print("Error in command-loop: ", e)

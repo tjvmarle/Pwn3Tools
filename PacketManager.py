@@ -5,7 +5,7 @@ gamePackets = {
     0x3031: TCP.TogglePuzzle,
     # 0x0000, : "heartbeat",
     # 0x6a70, : "jump",
-    # 0x2a69, : "spell",
+    # 0x2a69, : "shoot", #inc. spells
     # 0x733d, : "wpn_switch",
 }
 

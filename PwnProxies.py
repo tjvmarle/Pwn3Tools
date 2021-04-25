@@ -6,10 +6,12 @@ import proxyparser as parser
 # import struct
 from importlib import reload
 import PacketManager as PM
+from PacketGenerator import Generator
 
 
 # Basic proxy setup shamelessly stolen from LiveOverflow
 class Proxy2Server(Thread):
+    """Client Proxy to handle incoming data from the Master- and Gameservers"""
 
     def __init__(self, host, port):
         super(Proxy2Server, self).__init__()
@@ -18,7 +20,8 @@ class Proxy2Server(Thread):
         self.host = host
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((host, port))
-        self.pm = PM.PacketManager()
+        self.pm = PM.PacketManager("server")
+        self.pm.set_generator(Generator)
 
     def run(self):
         while True:
@@ -26,14 +29,14 @@ class Proxy2Server(Thread):
 
             if data:
                 try:
-                    self.pm.parse_packet(data, "server")
-                    # data = parser.parse(data, self.port, 'server')
+                    self.pm.handle_packet(data)
 
                 except Exception as e:
                     print('server[{}] error: '.format(self.port), e)
 
 
 class Game2Proxy(Thread):
+    """Server Proxy to handle incoming data from the Client (the game)"""
 
     def __init__(self, host, port):
         super(Game2Proxy, self).__init__()
@@ -44,11 +47,12 @@ class Game2Proxy(Thread):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((host, port))
         sock.listen(1)
+
         # waiting for a connection
         self.game, addr = sock.accept()
         self.connected = False
 
-        self.pm = PM.PacketManager()
+        self.pm = PM.PacketManager("client")
 
     def run(self):
         while True:
@@ -56,8 +60,7 @@ class Game2Proxy(Thread):
             if data:
                 self.connected = True
                 try:
-                    self.pm.parse_packet(data, "client")
-                    # data = parser.parse(data, self.port, 'client')
+                    self.pm.handle_packet(data)
 
                 except Exception as e:
                     print("client[{}] error: ".format(self.port), e)

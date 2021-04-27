@@ -7,11 +7,24 @@ import proxyparser as parser
 from importlib import reload
 import PacketManager as PM
 from PacketGenerator import Generator
+from CLI.CLI import CommandLineInput
 
 
 # Basic proxy setup shamelessly stolen from LiveOverflow
 class Proxy2Server(Thread):
     """Client Proxy to handle incoming data from the Master- and Gameservers"""
+
+    def set_packet_manager(self, new_pm):
+        """
+        Method to set a new PM. Ensures no refences hang to CLI or other references get lost
+            new_pm: a new PacketManager object
+        """
+        if self.pm is not None:
+            self.pm.stop_listening()
+            new_pm.receiver = self.pm.receiver
+            new_pm.generator = self.pm.generator
+
+        self.pm = new_pm
 
     def __init__(self, host, port):
         super(Proxy2Server, self).__init__()
@@ -20,7 +33,7 @@ class Proxy2Server(Thread):
         self.host = host
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((host, port))
-        self.pm = PM.PacketManager("server")
+        self.pm = None  # PM.PacketManager("server")
         self.pm.set_generator(Generator)
 
     def run(self):
@@ -37,6 +50,19 @@ class Proxy2Server(Thread):
 
 class Game2Proxy(Thread):
     """Server Proxy to handle incoming data from the Client (the game)"""
+
+    # TODO: Refactor this into a base proxy class so you can get rid of this duplicate code
+    def set_packet_manager(self, new_pm):
+        """
+        Method to set a new PM. Ensures no refences hang to CLI or other references get lost
+            new_pm: a new PacketManager object
+        """
+        if self.pm is not None:
+            self.pm.stop_listening()
+            new_pm.receiver = self.pm.receiver
+            new_pm.generator = self.pm.generator
+
+        self.pm = new_pm
 
     def __init__(self, host, port):
         super(Game2Proxy, self).__init__()
@@ -83,8 +109,8 @@ class Proxy(Thread):
         self.p2s = Proxy2Server(self.to_host, self.port)
 
         # Cross-references for the packetmanager
-        self.g2p.pm.reciever = self.p2s.server
-        self.p2s.pm.reciever = self.g2p.game
+        self.g2p.pm.receiver = self.p2s.server
+        self.p2s.pm.receiver = self.g2p.game
 
         self.g2p.start()
         self.p2s.start()
@@ -108,25 +134,31 @@ for port in range(3000, 3006):
     game_servers.append(_game_server)
     print("Listening on: {}".format(SERVER_ADDRESS + ":" + str(port)))
 
+CLI = CommandLineInput()
+
 
 def reload_proxies():
-    # Reciever and generator needs to be preserved
+    # receiver and generator needs to be preserved
     for entry in game_servers:
 
         if not entry.running:
             continue
 
-        old_pm_cl = entry.g2p.pm
-        new_pm_cl = PM.PacketManager("client")
-        new_pm_cl.reciever = old_pm_cl.reciever
-        new_pm_cl.generator = old_pm_cl.generator
-        entry.g2p.pm = new_pm_cl
+        #TODO: cleanup
+        entry.g2p.set_packet_manager(PM.PacketManager("client", CLI))
+        entry.p2s.set_packet_manager(PM.PacketManager("server", CLI))
 
-        old_pm_sr = entry.p2s.pm
-        new_pm_sr = PM.PacketManager("server")
-        new_pm_sr.reciever = old_pm_sr.reciever
-        new_pm_sr.generator = old_pm_sr.generator
-        entry.p2s.pm = new_pm_sr
+        # old_pm_cl = entry.g2p.pm
+        # new_pm_cl = PM.PacketManager("client")
+        # new_pm_cl.receiver = old_pm_cl.receiver
+        # new_pm_cl.generator = old_pm_cl.generator
+        # entry.g2p.pm = new_pm_cl
+
+        # old_pm_sr = entry.p2s.pm
+        # new_pm_sr = PM.PacketManager("server")
+        # new_pm_sr.receiver = old_pm_sr.receiver
+        # new_pm_sr.generator = old_pm_sr.generator
+        # entry.p2s.pm = new_pm_sr
         print("\nReloaded", entry.g2p.port, "\n\n\n")
 
 

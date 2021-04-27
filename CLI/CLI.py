@@ -14,7 +14,7 @@ class CommandLineInput():
         """
 
         for listener in self.listeners:
-            listener.cmd(input_cmd.split(" "))
+            listener.listen(input_cmd.split(" "))
 
         return
 

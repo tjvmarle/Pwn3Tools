@@ -2,7 +2,7 @@ class BasePacket():
     """ Abstract base class to parse the game packets. """
 
     def __init__(self, data):
-        self.data = data      # Recieved packet
+        self.data = data      # Received packet
         self.header_str = format(int.from_bytes(data[:2], "big"), "x").rjust(4, "0") + " "
         self.new_data = None  # Placeholder for modified packets
         self.modified = False

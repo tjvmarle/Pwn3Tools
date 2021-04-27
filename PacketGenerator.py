@@ -16,7 +16,7 @@ class Generator():
     def update(self, data):
         """
         Keeps track of latest packet data. Forms the basis for generating new packets.
-            data: a recieved packet
+            data: a received packet
         """
 
         self.latest_packet[int.from_bytes(data[:2], "big")] = data

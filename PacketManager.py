@@ -1,4 +1,5 @@
 import Packets as TCP
+from CLI import CommandListener
 
 gamePackets = {
     0x6d76: TCP.Position,
@@ -19,11 +20,21 @@ filter = (0x0000, 0x1703, 0x6d76)
 class PacketManager():
     """Handle the packets of one side of the proxy, so each proxy should get 2 PM's."""
 
-    def __init__(self, source):
-        """source: Signals if this PM recieves from either client or server """
+    def cmd(self, cmd_input):
+        """
+        This method will (eventually) implement all commands it should react to from the CLI
+            cmd_input: list containing the CLI-command [0] and possible arguments [1:]
+        """
+        print("Cmd received:", cmd_input)
 
+    def __init__(self, source, cli):
+        """
+        source: Signals if this PM receives from either client or server 
+        cli:    Reference to CLI to enable listening in on user input
+        """
+        self.cmd_listener = CommandListener(cli, self.cmd)
         self.packet = None
-        self.reciever = None  # The intended reciever of the packet
+        self.receiver = None  # The intended receiver of the packet
         self.source = source
         self.packetSource = gamePackets if self.source == "client" else serverPackets
 
@@ -71,8 +82,8 @@ class PacketManager():
             out_packet = data
 
         # The PM als handles resending the packets, perhaps should be the responsibility of someone else
-        if self.reciever is not None:
-            self.reciever.sendall(out_packet)
+        if self.receiver is not None:
+            self.receiver.sendall(out_packet)
             self.packet = None
 
     def set_generator(self, generator):
@@ -80,4 +91,4 @@ class PacketManager():
 
     def inject(self, packet_type):
         for packet in self.generator.generate(packet_type):
-            self.reciever.sendall(packet)
+            self.receiver.sendall(packet)

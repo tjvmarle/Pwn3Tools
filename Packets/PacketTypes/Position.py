@@ -1,4 +1,4 @@
-from Packets.Packet import BasePacket
+from Packets.PacketTypes.Packet import BasePacket
 
 
 class Position(BasePacket):

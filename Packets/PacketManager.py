@@ -1,9 +1,9 @@
-import Packets as TCP
+from .PacketTypes import Position, TogglePuzzle  # TODO: Find out why * doesn't work here
 from CLI import CommandListener
 
 gamePackets = {
-    0x6d76: TCP.Position,
-    0x3031: TCP.TogglePuzzle,
+    0x6d76: Position,
+    0x3031: TogglePuzzle,
     # 0x0000, : "heartbeat",
     # 0x6a70, : "jump",
     # 0x2a69, : "shoot", #inc. spells

@@ -1,2 +1,2 @@
-from Packets.Position import Position
-from Packets.TogglePuzzle import TogglePuzzle
+import Packets.PacketGenerator
+import Packets.PacketManager

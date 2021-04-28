@@ -1,13 +1,12 @@
 import socket
 import os
 from threading import Thread
-import proxyparser as parser
-# import random
-# import struct
 from importlib import reload
-import PacketManager as PM
-from PacketGenerator import Generator
-from CLI.CLI import CommandLineInput
+
+from Packets.PacketManager import PacketManager
+from Packets.PacketGenerator import Generator as PG
+# from Packets.PacketGenerator import Generator
+from CLI import CommandLineInput
 
 
 # Basic proxy setup shamelessly stolen from LiveOverflow
@@ -26,15 +25,15 @@ class Proxy2Server(Thread):
 
         self.pm = new_pm
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, cli):
         super(Proxy2Server, self).__init__()
         self.game = None  # Reference to other proxy
         self.port = port
         self.host = host
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((host, port))
-        self.pm = None  # PM.PacketManager("server")
-        self.pm.set_generator(Generator)
+        self.pm = PacketManager("server", cli)
+        self.pm.set_generator(PG.Generator)
 
     def run(self):
         while True:
@@ -64,7 +63,7 @@ class Game2Proxy(Thread):
 
         self.pm = new_pm
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, cli):
         super(Game2Proxy, self).__init__()
         self.server = None  # Reference to other proxy
         self.port = port
@@ -78,8 +77,8 @@ class Game2Proxy(Thread):
         self.game = sock.accept()[0]  # This is were all the threads will block if not used!
         self.connected = False
 
-        self.pm = PM.PacketManager("client")
-        self.pm.set_generator(Generator)
+        self.pm = PacketManager("client", cli)
+        self.pm.set_generator(PG.Generator)
 
     def run(self):
         while True:
@@ -95,18 +94,19 @@ class Game2Proxy(Thread):
 
 class Proxy(Thread):
 
-    def __init__(self, from_host, to_host, port):
+    def __init__(self, from_host, to_host, port, cli):
         super(Proxy, self).__init__()
         self.from_host = from_host
         self.to_host = to_host
         self.port = port
         self.running = False
+        self.cli = cli
 
     def run(self):
         # while True: #I don't think this one is actually necessary...
 
-        self.g2p = Game2Proxy(self.from_host, self.port)
-        self.p2s = Proxy2Server(self.to_host, self.port)
+        self.g2p = Game2Proxy(self.from_host, self.port, self.cli)
+        self.p2s = Proxy2Server(self.to_host, self.port, self.cli)
 
         # Cross-references for the packetmanager
         self.g2p.pm.receiver = self.p2s.server
@@ -120,21 +120,21 @@ class Proxy(Thread):
         pass
 
 
+CLI = CommandLineInput()
+
 # First boot al servers
 SERVER_ADDRESS = "192.168.138.130"  # Set to IP of Ubuntu VM
 
-master_server = Proxy('0.0.0.0', SERVER_ADDRESS, 3333)
+master_server = Proxy('0.0.0.0', SERVER_ADDRESS, 3333, CLI)
 master_server.start()
 print("Listening on: {}".format(SERVER_ADDRESS + ":" + str(3333)))
 
 game_servers = []
 for port in range(3000, 3006):
-    _game_server = Proxy('0.0.0.0', SERVER_ADDRESS, port)
+    _game_server = Proxy('0.0.0.0', SERVER_ADDRESS, port, CLI)
     _game_server.start()
     game_servers.append(_game_server)
     print("Listening on: {}".format(SERVER_ADDRESS + ":" + str(port)))
-
-CLI = CommandLineInput()
 
 
 def reload_proxies():
@@ -145,8 +145,8 @@ def reload_proxies():
             continue
 
         #TODO: cleanup
-        entry.g2p.set_packet_manager(PM.PacketManager("client", CLI))
-        entry.p2s.set_packet_manager(PM.PacketManager("server", CLI))
+        entry.g2p.set_packet_manager(PacketManager("client", CLI))
+        entry.p2s.set_packet_manager(PacketManager("server", CLI))
 
         # old_pm_cl = entry.g2p.pm
         # new_pm_cl = PM.PacketManager("client")
@@ -171,7 +171,7 @@ while True:
             os._exit(0)
 
         else:
-            reload(PM)
+            reload(PacketManager)
             reload_proxies()
 
     except Exception as e:

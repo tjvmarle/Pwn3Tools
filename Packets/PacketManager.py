@@ -86,9 +86,10 @@ class PacketManager():
             self.receiver.sendall(out_packet)
             self.packet = None
 
-    def set_generator(self, generator):
-        self.generator = generator
+    # TODO: First implement the generator itself more before you hang it everywhere
+    # def set_generator(self, generator):
+    #     self.generator = generator
 
-    def inject(self, packet_type):
-        for packet in self.generator.generate(packet_type):
-            self.receiver.sendall(packet)
+    # def inject(self, packet_type):
+    #     for packet in self.generator.generate(packet_type):
+    #         self.receiver.sendall(packet)

@@ -27,16 +27,17 @@ class PacketManager():
         """
         print("Cmd received:", cmd_input)
 
-    def __init__(self, source, cli):
+    def __init__(self, client, cli):
+        # TODO: accept a Commandlistener, not a CLI
         """
-        source: Signals if this PM receives from either client or server 
+        client: Signals if this PM handles either the game or the server (GH/SH)
         cli:    Reference to CLI to enable listening in on user input
         """
         self.cmd_listener = CommandListener(cli, self.cmd)
         self.packet = None
         self.receiver = None  # The intended receiver of the packet
-        self.source = source
-        self.packetSource = gamePackets if self.source == "client" else serverPackets
+        self.client = client
+        self.packetConfig = gamePackets if self.client == "GH" else serverPackets
 
     def __print_unknown(self, data, prefix):
         """
@@ -59,11 +60,11 @@ class PacketManager():
         """
 
         header = int.from_bytes(data[:2], "big")
-        prefix = "[game]: " if self.source == "client" else "[serv]: "
+        prefix = "[game]: " if self.client == "GH" else "[serv]: "
 
         if int.from_bytes(data[:2], "big") not in filter:
-            if header in self.packetSource:
-                self.packet = self.packetSource[header](data)
+            if header in self.packetConfig:
+                self.packet = self.packetConfig[header](data)
                 print(prefix, end="")
                 self.packet.print()
             else:

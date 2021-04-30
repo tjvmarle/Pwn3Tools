@@ -6,6 +6,7 @@ class BaseProxy(Thread):
     """Core part of both the client and server handler"""
 
     def __init__(self, port, host):
+        super(BaseProxy, self).__init__()
         self.crossref = None  # Reference to other pair of the proxy
         self.port = port
         self.host = host
@@ -14,8 +15,8 @@ class BaseProxy(Thread):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.pm = None
         self.name = ""
-        pass
 
+    # TODO: Apparently getters/setters are not 'pythonic'. Check out alternative.
     def setPacketManager(self, packetmanager):
         """
         Method to set a new PM. Ensures no references hang to CLI or other references get lost.
@@ -32,7 +33,7 @@ class BaseProxy(Thread):
         """Reference to the other side of the handler-pair."""
         self.crossref = xref
 
-    def preRunCheck(self):
+    def pre_run_check(self):
         """Couple of selfchecks before runnning this side of the proxy."""
         runnable = True
 
@@ -60,7 +61,8 @@ class BaseProxy(Thread):
         return runnable
 
     def run(self):
-        runnable = self.preRunCheck()
+        runnable = self.pre_run_check()
+        print("Running {}[{}]".format(self.name, self.port))
         while runnable:
             data = self.client.recv(4096)
             if data and self.pm is not None:

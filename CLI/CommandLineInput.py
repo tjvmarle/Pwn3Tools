@@ -5,7 +5,6 @@ class CommandLineInput():
         self.listeners = []
         self.single_arg_cmd = {}
         self.multi_arg_cmd = {}
-        pass
 
     def cmd(self, input_cmd):
         """

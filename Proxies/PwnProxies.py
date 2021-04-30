@@ -15,7 +15,7 @@ class Proxy2Server(Thread):
 
     def set_packet_manager(self, new_pm):
         """
-        Method to set a new PM. Ensures no refences hang to CLI or other references get lost
+        Method to set a new PM. Ensures no references hang to CLI or other references get lost
             new_pm: a new PacketManager object
         """
         if self.pm is not None:
@@ -53,7 +53,7 @@ class Game2Proxy(Thread):
     # TODO: Refactor this into a base proxy class so you can get rid of this duplicate code
     def set_packet_manager(self, new_pm):
         """
-        Method to set a new PM. Ensures no refences hang to CLI or other references get lost
+        Method to set a new PM. Ensures no references hang to CLI or other references get lost
             new_pm: a new PacketManager object
         """
         if self.pm is not None:
@@ -78,7 +78,7 @@ class Game2Proxy(Thread):
         self.connected = False
 
         self.pm = PacketManager("client", cli)
-        self.pm.set_generator(PG.Generator)
+        # self.pm.set_generator(PG.Generator)
 
     def run(self):
         while True:

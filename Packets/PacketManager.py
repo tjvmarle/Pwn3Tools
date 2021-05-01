@@ -1,5 +1,6 @@
-from .PacketTypes import Position, TogglePuzzle  # TODO: Find out why * doesn't work here
 from CLI import CommandListener
+from Packets.PacketTypes.Position import Position
+from Packets.PacketTypes.TogglePuzzle import TogglePuzzle
 
 gamePackets = {
     0x6d76: Position,
@@ -51,7 +52,7 @@ class PacketManager():
             packet_string += format(byte, "x").rjust(2, "0") + (" " if alternator else "")
             alternator = not alternator
         print(prefix, end="")
-        print("unk ", packet_string)
+        print("unk", packet_string)
 
     def handle_packet(self, data):
         """
@@ -60,7 +61,7 @@ class PacketManager():
         """
 
         header = int.from_bytes(data[:2], "big")
-        prefix = "[game]: " if self.client == "GH" else "[serv]: "
+        prefix = "[{}]: ".format(self.client)
 
         if int.from_bytes(data[:2], "big") not in filter:
             if header in self.packetConfig:
@@ -86,6 +87,8 @@ class PacketManager():
         if self.receiver is not None:
             self.receiver.sendall(out_packet)
             self.packet = None
+
+        return out_packet
 
     # TODO: First implement the generator itself more before you hang it everywhere
     # def set_generator(self, generator):

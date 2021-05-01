@@ -33,7 +33,7 @@ class Proxy2Server(Thread):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((host, port))
         self.pm = PacketManager("server", cli)
-        self.pm.set_generator(PG.Generator)
+        # self.pm.set_generator(PG.Generator)
 
     def run(self):
         while True:
@@ -74,7 +74,7 @@ class Game2Proxy(Thread):
         sock.listen(1)
 
         # waiting for a connection
-        self.game = sock.accept()[0]  # This is were all the threads will block if not used!
+        self.game = sock.accept()[0]  # This is were the thread will block if not used!
         self.connected = False
 
         self.pm = PacketManager("client", cli)

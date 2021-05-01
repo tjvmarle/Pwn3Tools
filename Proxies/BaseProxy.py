@@ -12,25 +12,28 @@ class BaseProxy(Thread):
         self.host = host
         self.client = None
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.pm = None
         self.name = ""
 
-    # TODO: Apparently getters/setters are not 'pythonic'. Check out alternative.
-    def setPacketManager(self, packetmanager):
+    def setPacketManager(self, new_pm):
         """
         Method to set a new PM. Ensures no references hang to CLI or other references get lost.
             packetmanager: a new PacketManager object
         """
         if self.pm is not None:
             self.pm.stop_listening()
-            packetmanager.receiver = self.pm.receiver
-            packetmanager.generator = self.pm.generator
+            new_pm.client = self.pm.client
+            # new_pm.generator = self.pm.generator
 
-        self.pm = packetmanager
+        self.pm = new_pm
 
+    # TODO: Apparently getters/setters are not 'pythonic'. Check out alternative.
     def setCrossRef(self, xref):
-        """Reference to the other side of the handler-pair."""
+        """
+        Reference to the other side of the handler-pair.
+            xref: Reference to the other instance
+        """
         self.crossref = xref
 
     def pre_run_check(self):
@@ -67,7 +70,8 @@ class BaseProxy(Thread):
             data = self.client.recv(4096)
             if data and self.pm is not None:
                 try:
-                    self.pm.handle_packet(data)
+                    new_data = self.pm.handle_packet(data)
+                    self.crossref.client.sendall(new_data)
 
                 except Exception as e:
                     print("{}[{}] error: ".format(self.name, self.port), e)

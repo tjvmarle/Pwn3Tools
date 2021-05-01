@@ -2,13 +2,23 @@ import os
 from Proxies.PwnProxy import PwnProxy
 from CLI.CommandLineInput import CommandLineInput
 from Packets.PacketManager import PacketManager as PM
+from importlib import reload
+import Packets.PacketManager
+
+# Run main
 
 
 def create_pms(cli):
     return {"GH": PM("GH", cli), "SH": PM("SH", cli)}
 
 
-# Run main
+def reload_pms(pm_list):
+    for pm in pm_list:
+        pm.reset_pms()
+
+    print("Reloaded PacketManagers")
+
+
 CLI = CommandLineInput()
 
 # The game starts with a [game<-->master_server] connection. Aftere logging in the master delegates this to a
@@ -28,11 +38,12 @@ while True:
     try:
         cmd = input()
 
-        if cmd[:4] == 'quit':
+        if cmd[:4] == 'quit' or cmd[:4] == 'exit':
             os._exit(0)
 
         else:
-            # TODO: Reload PM's
+            reload(Packets.PacketManager)
+            reload_pms(game_proxies)
             print("Unknown command [{}]".format(cmd))
             pass
 

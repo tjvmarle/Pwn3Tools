@@ -22,7 +22,7 @@ class BaseProxy(Thread):
             packetmanager: a new PacketManager object
         """
         if self.pm is not None:
-            self.pm.stop_listening()
+            self.pm.cmd_listener.stop_listening()
             new_pm.client = self.pm.client
             # new_pm.generator = self.pm.generator
 

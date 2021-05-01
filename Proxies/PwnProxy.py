@@ -13,6 +13,7 @@ class PwnProxy(Thread):
         self.cli = cli
         self.gamehandler = None
         self.serverhandler = None
+        self.running = False
 
     def setPacketManagers(self, pmMap):
         # TODO: Isn't this a tad too convoluted? Maybe change into 'createPacketManagers' or something. Can probably be
@@ -20,9 +21,10 @@ class PwnProxy(Thread):
         self.gamehandler.setPacketManager(pmMap["GH"])
         self.serverhandler.setPacketManager(pmMap["SH"])
 
-    def resetPacketManagers(self):
-        self.gamehandler.setPacketManager(PM("GH", self.cli))
-        self.serverhandler.setPacketManager(PM("SH", self.cli))
+    def reset_pms(self):
+        if self.running:
+            self.gamehandler.setPacketManager(PM("GH", self.cli))
+            self.serverhandler.setPacketManager(PM("SH", self.cli))
 
     def run(self):
         # Should probably accept these as arguments in the constructor for better dependency inj.
@@ -36,3 +38,4 @@ class PwnProxy(Thread):
 
         self.gamehandler.start()
         self.serverhandler.start()
+        self.running = True

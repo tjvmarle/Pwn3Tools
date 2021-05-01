@@ -10,5 +10,4 @@ class ServerHandler(BaseProxy):
         super(ServerHandler, self).__init__(port, host)
         self.name = "SH"
         self.client.connect((host, port))
-        self.connected = True
         print("Connected {}[{}]".format(self.name, self.port))

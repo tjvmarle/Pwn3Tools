@@ -10,9 +10,6 @@ class GameHandler(BaseProxy):
         self.name = "GH"
         self.client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.client.bind((self.host, self.port))
-
-        # FIXME: Completion of the setup in main blocks here on unused handlers, move to own thread and run from there
         self.client.listen(1)
         self.client = self.client.accept()[0]  # Bit ugly, but it works
-        self.connected = True
         print("Connected {}[{}]".format(self.name, self.port))

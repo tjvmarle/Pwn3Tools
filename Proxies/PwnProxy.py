@@ -1,7 +1,10 @@
 from threading import Thread
 from Proxies.GameHandler import GameHandler as GH
 from Proxies.ServerHandler import ServerHandler as SH
-from Packets.PacketManager import PacketManager as PM
+import Packets.PacketManager as PM
+
+from importlib import reload
+import Packets.PacketManager
 
 
 class PwnProxy(Thread):
@@ -23,8 +26,9 @@ class PwnProxy(Thread):
 
     def reset_pms(self):
         if self.running:
-            self.gamehandler.setPacketManager(PM("GH", self.cli))
-            self.serverhandler.setPacketManager(PM("SH", self.cli))
+            reload(PM)
+            self.gamehandler.setPacketManager(PM.PacketManager("GH", self.cli))
+            self.serverhandler.setPacketManager(PM.PacketManager("SH", self.cli))
 
     def run(self):
         # Should probably accept these as arguments in the constructor for better dependency inj.
@@ -39,3 +43,4 @@ class PwnProxy(Thread):
         self.gamehandler.start()
         self.serverhandler.start()
         self.running = True
+        print("{}[{}] up-and-running".format(self.name, self.port))

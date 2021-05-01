@@ -1,20 +1,20 @@
 import os
 from Proxies.PwnProxy import PwnProxy
 from CLI.CommandLineInput import CommandLineInput
-from Packets.PacketManager import PacketManager as PM
 from importlib import reload
 import Packets.PacketManager
+
 
 # Run main
 
 
 def create_pms(cli):
-    return {"GH": PM("GH", cli), "SH": PM("SH", cli)}
+    return {"GH": Packets.PacketManager.PacketManager("GH", cli), "SH": Packets.PacketManager.PacketManager("SH", cli)}
 
 
-def reload_pms(pm_list):
-    for pm in pm_list:
-        pm.reset_pms()
+def reload_pms(proxy_list):
+    for proxy in proxy_list:
+        proxy.reset_pms()
 
     print("Reloaded PacketManagers")
 
@@ -44,7 +44,7 @@ while True:
         else:
             reload(Packets.PacketManager)
             reload_pms(game_proxies)
-            print("Unknown command [{}]".format(cmd))
+            print("Unknown command [{}]\n\n\n".format(cmd))
             pass
 
     except Exception as e:

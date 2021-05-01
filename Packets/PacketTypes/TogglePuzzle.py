@@ -1,4 +1,4 @@
-from Packets.PacketTypes.Packet import BasePacket
+from Packets.PacketTypes.BasePacket import BasePacket
 
 
 class TogglePuzzle(BasePacket):

@@ -1,25 +1,30 @@
 from CLI import CommandListener
-from Packets.PacketTypes.Position import Position
-from Packets.PacketTypes.TogglePuzzle import TogglePuzzle
+# from Packets.PacketTypes.Position import Position
+# from Packets.PacketTypes.TogglePuzzle import TogglePuzzle
 
-gamePackets = {
-    0x6d76: Position,
-    0x3031: TogglePuzzle,
-    # 0x0000, : "heartbeat",
-    # 0x6a70, : "jump",
-    # 0x2a69, : "shoot", #inc. spells
-    # 0x733d, : "wpn_switch",
-}
-
-serverPackets = {
-    # 0x6d61: "mana"
-}
-
-filter = (0x0000, 0x1703, 0x6d76)
+from importlib import reload
+import Packets.PacketTypes.Position
+import Packets.PacketTypes.TogglePuzzle
 
 
 class PacketManager():
     """Handle the packets of one side of the proxy, so each proxy should get 2 PM's."""
+
+    gamePackets = {
+        0x6d76: Packets.PacketTypes.Position.Position,
+        0x3031: Packets.PacketTypes.TogglePuzzle.TogglePuzzle,
+        # 0x0000, : "heartbeat",
+        # 0x6a70, : "jump",
+        # 0x2a69, : "shoot", #inc. spells
+        # 0x733d, : "wpn_switch",
+    }
+
+    serverPackets = {
+        # 0x6d61: "mana"
+    }
+
+    # filter = (0x0000, 0x1703, 0x6d76)
+    filter = (0x0000, 0x1703)
 
     def cmd(self, cmd_input):
         """
@@ -34,11 +39,14 @@ class PacketManager():
         client: Signals if this PM handles either the game or the server (GH/SH)
         cli:    Reference to CLI to enable listening in on user input
         """
+
+        # FIXME: Reloading the Packets-module doesn't seem to work here yet
+
         self.cmd_listener = CommandListener(cli, self.cmd)
         self.packet = None
         self.receiver = None  # The intended receiver of the packet
         self.client = client
-        self.packetConfig = gamePackets if self.client == "GH" else serverPackets
+        self.packetConfig = PacketManager.gamePackets if self.client == "GH" else PacketManager.serverPackets
 
     def __print_unknown(self, data, prefix):
         """
@@ -63,7 +71,7 @@ class PacketManager():
         header = int.from_bytes(data[:2], "big")
         prefix = "[{}]: ".format(self.client)
 
-        if int.from_bytes(data[:2], "big") not in filter:
+        if int.from_bytes(data[:2], "big") not in PacketManager.filter:
             if header in self.packetConfig:
                 self.packet = self.packetConfig[header](data)
                 print(prefix, end="")

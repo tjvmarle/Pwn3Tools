@@ -71,7 +71,8 @@ class BaseProxy(Thread):
             if data and self.pm is not None:
                 try:
                     new_data = self.pm.handle_packet(data)
-                    self.crossref.client.sendall(new_data)
+                    for packet in new_data:
+                        self.crossref.client.sendall(packet)
 
                 except Exception as e:
                     print("{}[{}] error: ".format(self.name, self.port), e)

@@ -4,8 +4,23 @@ from Packets.PacketTypes import TogglePuzzle as Tog
 import Packets.PacketConfig as PC
 from importlib import reload
 
-# filter = (0x0000, 0x1703, 0x6d76)
-filter = (0x0000, 0x1703)
+# 0x7073: probably enemy positions?fireball
+filter = (
+    0x0000,  # Heartbeat
+    0x1703,  # GH - shows periodically
+    0x6d76,  # Position, also for enemies (?)
+    # 0x7073,
+    0x7878,  # SH - Terminating a spell projectile (?)
+    # 0x6d61,
+    0x733d,  # SH - Switching weapons
+    0x726c,  # SH - Reloading weapons
+    # 0x2a69,  # GH - Firing weapon
+    0x6a70,  # GH - Jumping
+)
+filter_client = (
+    "GH",
+    # "SH",
+)
 
 
 class PacketManager():
@@ -52,7 +67,7 @@ class PacketManager():
             data:   TCP packet in the form of a raw bytes list
         """
         header = int.from_bytes(data[:2], "big")
-        if header not in filter:
+        if header not in filter and self.client not in filter_client:
             if header in self.packetConfig:
                 self.packet = self.packetConfig[header](data)
 
@@ -74,7 +89,7 @@ class PacketManager():
         else:
             out_packet = data
 
-        return out_packet
+        return (out_packet,)
 
     # TODO: First implement the generator itself more before you hang it everywhere
     # def set_generator(self, generator):

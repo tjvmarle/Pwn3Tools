@@ -23,23 +23,21 @@ class BasePacket():
 
         return rev_string
 
-    # TODO: Finetune preferred formatting. Maybe drop a a couple of high/low bits
     def _pos_to_string(self, xyz):
         """
         Generic way to write out position data
-            xyx:    raw_bytes, containing x, y, and z position consecutively
+            xyx:    raw_bytes (4) converted to int, containing x, y, and z position consecutively
             return: string with space-seperated x-y-z-positions
         """
-        return " ".join(str(pos).rjust(10) for pos in xyz) + " "
+        return " ".join(str(pos)[1:-3].rjust(7) for pos in xyz) + " "
 
-    # TODO: Change to degrees (float, fixed with --> import struct)
     def _angles_to_string(self, angles):
         """
         Generic way to write out angle data
-            angles: raw_bytes, containing theta, phi and some third angle consecutively
+            angles: raw_bytes (2) converted to int, containing theta, phi and some third angle consecutively
             return: string with space-seperated theta-phi-3rd-angle
         """
-        return " ".join(str(ang).rjust(6) for ang in angles) + " "
+        return " ".join(str(round(ang / 65536 * 360, 1)).rjust(5) for ang in angles) + " "
 
     def _movedir_to_string(self, md):
         """

@@ -1,30 +1,15 @@
 from CLI import CommandListener
-# from Packets.PacketTypes.Position import Position
-# from Packets.PacketTypes.TogglePuzzle import TogglePuzzle
-
+from Packets.PacketTypes import Position as Pos
+from Packets.PacketTypes import TogglePuzzle as Tog
+import Packets.PacketConfig as PC
 from importlib import reload
-import Packets.PacketTypes.Position
-import Packets.PacketTypes.TogglePuzzle
+
+# filter = (0x0000, 0x1703, 0x6d76)
+filter = (0x0000, 0x1703)
 
 
 class PacketManager():
     """Handle the packets of one side of the proxy, so each proxy should get 2 PM's."""
-
-    gamePackets = {
-        0x6d76: Packets.PacketTypes.Position.Position,
-        0x3031: Packets.PacketTypes.TogglePuzzle.TogglePuzzle,
-        # 0x0000, : "heartbeat",
-        # 0x6a70, : "jump",
-        # 0x2a69, : "shoot", #inc. spells
-        # 0x733d, : "wpn_switch",
-    }
-
-    serverPackets = {
-        # 0x6d61: "mana"
-    }
-
-    # filter = (0x0000, 0x1703, 0x6d76)
-    filter = (0x0000, 0x1703)
 
     def cmd(self, cmd_input):
         """
@@ -40,15 +25,15 @@ class PacketManager():
         cli:    Reference to CLI to enable listening in on user input
         """
 
-        # FIXME: Reloading the Packets-module doesn't seem to work here yet
-
         self.cmd_listener = CommandListener(cli, self.cmd)
         self.packet = None
         self.receiver = None  # The intended receiver of the packet
         self.client = client
-        self.packetConfig = PacketManager.gamePackets if self.client == "GH" else PacketManager.serverPackets
 
-    def __print_unknown(self, data, prefix):
+        reload(PC)
+        self.packetConfig = PC.get_config(client)
+
+    def __print_unknown(self, data):
         """
         Print a packet not defined in either dict
             data: raw bytes list
@@ -59,7 +44,6 @@ class PacketManager():
         for byte in data:
             packet_string += format(byte, "x").rjust(2, "0") + (" " if alternator else "")
             alternator = not alternator
-        print(prefix, end="")
         print("unk", packet_string)
 
     def handle_packet(self, data):
@@ -67,17 +51,16 @@ class PacketManager():
         Entry function for the proxy the let the PM process an incoming packet
             data:   TCP packet in the form of a raw bytes list
         """
-
         header = int.from_bytes(data[:2], "big")
-        prefix = "[{}]: ".format(self.client)
-
-        if int.from_bytes(data[:2], "big") not in PacketManager.filter:
+        if header not in filter:
             if header in self.packetConfig:
                 self.packet = self.packetConfig[header](data)
-                print(prefix, end="")
-                self.packet.print()
+
+            print("[{}]: ".format(self.client), end="")
+            if self.packet is None:
+                self.__print_unknown(data)
             else:
-                self.__print_unknown(data, prefix)
+                self.packet.print()
 
         # Should be set most of the time:
         # try:
@@ -90,11 +73,6 @@ class PacketManager():
             out_packet = self.packet.new_packet
         else:
             out_packet = data
-
-        # The PM als handles resending the packets, perhaps should be the responsibility of someone else
-        if self.receiver is not None:
-            self.receiver.sendall(out_packet)
-            self.packet = None
 
         return out_packet
 

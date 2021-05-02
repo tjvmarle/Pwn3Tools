@@ -1,2 +1,2 @@
-__all__ = ["Position", "TogglePuzzle"]
-from . import *
+import Packets.PacketTypes.Position
+import Packets.PacketTypes.TogglePuzzle

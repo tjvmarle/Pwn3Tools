@@ -103,7 +103,7 @@ class PacketManager():
 
         out_packet = None
         if self.packet is not None and self.packet.modified:
-            out_packet = self.packet.new_packet
+            out_packet = self.packet.new_data
         else:
             out_packet = data
 

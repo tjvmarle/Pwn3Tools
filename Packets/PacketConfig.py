@@ -1,5 +1,6 @@
 from Packets.PacketTypes import Position as Pos
 from Packets.PacketTypes import TogglePuzzle as Tog
+from Packets.PacketTypes import Mana as Man
 from importlib import reload
 
 
@@ -11,6 +12,7 @@ def get_config(client):
 
     reload(Pos)
     reload(Tog)
+    reload(Man)
     if client == "GH":
         return {
             0x6d76: Pos.Position,
@@ -22,5 +24,5 @@ def get_config(client):
         }
     else:
         return {
-            # 0x6d61: "mana"
+            0x6d61: Man.Mana,
         }
